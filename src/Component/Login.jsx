@@ -1,4 +1,5 @@
 // import axios from 'axios';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -73,17 +74,14 @@ function Login() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    console.log(email);
-    console.log(pwd);
-    // const res = await axios.post('', {
-    //   email,
-    //   pwd,
-    // });
-    // if (res.status === 200) {
-    //   로그인
-    // }
-    dispatch(login({ isLogin: true }));
-    navigate('/chatList');
+    const res = await axios.post('/users/login', {
+      email,
+      pwd,
+    });
+    if (res.status === 200) {
+      dispatch(login({ isLogin: true }));
+      navigate('/chatList');
+    }
   };
 
   const moveToRegister = () => {

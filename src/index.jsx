@@ -13,7 +13,7 @@ import Mypage from './Component/Mypage';
 import store, { persistor } from './redux/store/store';
 import Register from './Component/Register';
 
-axios.defaults.baseURL = 'http://api.example.com';
+axios.defaults.baseURL = 'http://15.164.169.156:3000';
 
 const router = createBrowserRouter([
   {
