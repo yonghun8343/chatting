@@ -1,11 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { PersistGate } from 'redux-persist/integration/react';
+import { Provider } from 'react-redux';
+import axios from 'axios';
+import GlobalStyle from './GlobalStyle';
 import App from './Component/App';
 import Login from './Component/Login';
 import ChatList from './Component/ChatList';
 import ChatRoom from './Component/ChatRoom';
 import Mypage from './Component/Mypage';
+import store, { persistor } from './redux/store/store';
+import Register from './Component/Register';
+
+axios.defaults.baseURL = 'http://api.example.com';
 
 const router = createBrowserRouter([
   {
@@ -13,7 +21,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: '/login',
+        index: true,
         element: <Login />,
       },
       {
@@ -28,6 +36,10 @@ const router = createBrowserRouter([
         path: '/myPage',
         element: <Mypage />,
       },
+      {
+        path: '/register',
+        element: <Register />,
+      },
     ],
   },
 ]);
@@ -35,6 +47,11 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <GlobalStyle />
+        <RouterProvider router={router} />
+      </PersistGate>
+    </Provider>
   </React.StrictMode>
 );
