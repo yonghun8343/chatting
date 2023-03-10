@@ -48,6 +48,9 @@ function Register() {
   });
   const [pwd, setPwd] = useState('');
   const [msg, setMsg] = useState('');
+  const [isLoading, setisLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [nick, setNick] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -68,10 +71,23 @@ function Register() {
     setPwd(e.target.value);
   };
 
+  const nameChange = (e) => {
+    setName(e.target.value);
+  };
+
+  const nickChange = (e) => {
+    setNick(e.target.value);
+  };
+
   const sendEmail = async () => {
     try {
-      const res = await axios.post('/users/auth', {
-        email,
+      setisLoading(true);
+      const res = await axios({
+        method: 'post',
+        url: '/users/auth',
+        data: {
+          email,
+        },
       });
       if (res.status === 201) {
         setAuth({
@@ -83,33 +99,58 @@ function Register() {
       }
     } catch (error) {
       setMsg('인증번호를 발송 할 수 없습니다.');
+    } finally {
+      setisLoading(false);
     }
   };
 
-  const sendAuth = () => {
-    axios.post('', {
-      email,
-      auth,
-    });
-    setAuth({
-      auth,
-      isAuth: 'done',
-    });
+  const sendAuth = async () => {
+    try {
+      setisLoading(true);
+      const res = await axios({
+        url: '/users/auth_check/',
+        method: 'get',
+        params: {
+          email,
+          digit: auth.auth,
+        },
+      });
+      if (res.status === 200 && res.data.message === 'check complete.') {
+        setAuth({
+          auth,
+          isAuth: 'done',
+        });
+      }
+    } catch (error) {
+      setMsg('인증 할 수 없습니다.');
+    } finally {
+      setisLoading(false);
+    }
   };
 
   const onSubmit = async (e) => {
-    e.preventDefault();
-    console.log(email);
-    console.log(pwd);
-    // const res = await axios.post('', {
-    //   email,
-    //   pwd,
-    // });
-    // if (res.status === 200) {
-    //   로그인
-    // }
-    dispatch(login({ isLogin: true }));
-    navigate('/chatList');
+    try {
+      e.preventDefault();
+      setisLoading(false);
+      const res = await axios({
+        method: 'post',
+        url: '/users/sign',
+        data: {
+          email,
+          pwd,
+          name,
+          nick,
+        },
+      });
+      if (res.status === 200 && res.data.status === 'success') {
+        dispatch(login({ isLogin: true, userId: res.data.info.uid }));
+        navigate('/chatList');
+      }
+    } catch (error) {
+      setMsg('인증 할 수 없습니다.');
+    } finally {
+      setisLoading(false);
+    }
   };
 
   return (
@@ -120,10 +161,11 @@ function Register() {
           onChange={emailChange}
           placeholder="이메일"
           disabled={auth.isAuth !== 'before'}
+          value={email}
         />
         {auth.isAuth === 'before' && (
-          <Button type="button" onClick={sendEmail}>
-            인증하기
+          <Button type="button" onClick={sendEmail} disabled={isLoading}>
+            {!isLoading ? '인증하기' : '진행 중'}
           </Button>
         )}
         {auth.isAuth === 'sending' && (
@@ -132,10 +174,11 @@ function Register() {
               type="password"
               onChange={authChange}
               placeholder="인증 번호"
+              value={auth.auth}
             />
             <span>{msg}</span>
-            <Button type="button" onClick={sendAuth}>
-              인증하기
+            <Button type="button" onClick={sendAuth} disabled={isLoading}>
+              {!isLoading ? '인증하기' : '진행 중'}
             </Button>
           </>
         )}
@@ -145,8 +188,23 @@ function Register() {
               type="password"
               onChange={pwdChange}
               placeholder="비밀번호"
+              value={pwd}
             />
-            <Button type="submit">회원가입</Button>
+            <InputBox
+              type="text"
+              onChange={nameChange}
+              placeholder="이름"
+              value={name}
+            />
+            <InputBox
+              type="text"
+              onChange={nickChange}
+              placeholder="닉네임"
+              value={nick}
+            />
+            <Button type="submit" disabled={isLoading}>
+              {!isLoading ? '회원가입' : '진행 중'}
+            </Button>
           </>
         )}
       </RegisterForm>

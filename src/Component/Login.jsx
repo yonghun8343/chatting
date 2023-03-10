@@ -52,6 +52,7 @@ const SpanBox = styled.span`
 function Login() {
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
+  const [msg, setMsg] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -74,13 +75,25 @@ function Login() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const res = await axios.post('/users/login', {
-      email,
       pwd,
-    });
-    if (res.status === 200) {
-      dispatch(login({ isLogin: true }));
-      navigate('/chatList');
+    try {
+      const res = await axios.post('/users/login', {
+        email,
+        pwd,
+      });
+      if (res.status === 200) {
+        dispatch(
+          login({
+            isLogin: true,
+            userId: res.data.info.uid,
+            name: res.data.info.name,
+            nick: res.data.info.nick,
+          })
+        );
+        navigate('/chatList');
+      }
+    } catch (error) {
+      setMsg('오류가 발생하였습니다.');
     }
   };
 
@@ -98,6 +111,7 @@ function Login() {
             placeholder="비밀번호"
             onChange={pwdChange}
           />
+          <span>{msg}</span>
         </div>
         <Button type="submit">로그인</Button>
       </LoginForm>
